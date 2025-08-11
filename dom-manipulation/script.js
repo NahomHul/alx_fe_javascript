@@ -19,13 +19,21 @@ async function fetchQuotesFromServer() {
 
 // Handle syncing between local and server quotes
 function handleDataSync(serverQuotes) {
+    let isNewQuoteAdded = false; // Flag to track if new quotes were added
+
     // Simple conflict resolution: server data takes precedence
     serverQuotes.forEach(serverQuote => {
         const existingQuote = quotes.find(q => q.text === serverQuote.text);
         if (!existingQuote) {
             quotes.push(serverQuote); // Add new quote
+            isNewQuoteAdded = true; // Mark that a new quote was added
         }
     });
+    
+    if (isNewQuoteAdded) {
+        notifyUser("Quotes synced with server!");
+    }
+
     saveQuotes();
 }
 
@@ -100,6 +108,20 @@ async function syncQuotes() {
 
 // Periodically check for updates from the server
 setInterval(syncQuotes, 30000); // Check every 30 seconds
+
+// Notify user of updates
+function notifyUser(message) {
+    const notification = document.createElement('div');
+    notification.textContent = message;
+    notification.style.backgroundColor = 'yellow';
+    notification.style.padding = '10px';
+    notification.style.margin = '10px 0';
+    document.body.prepend(notification);
+
+    setTimeout(() => {
+        notification.remove();
+    }, 5000);
+}
 
 // Create initial quotes and categories when the page loads
 fetchQuotesFromServer();
